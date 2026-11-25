@@ -5,7 +5,7 @@
 - 运行链接（Devpost 提交用）：https://g0f3l-raw.sakupa.com/jobcard/
 - 带 Sakupa 横幅的包装页：https://g0f3l.sakupa.com/jobcard/
 - 免费有效期至：**2026-12-25 10:44 北京时间**（2026-12-25T02:44:48Z），覆盖投稿截止（12-01）与评审期（12-10 至 12-16）。到期前可用 `refresh` 续期 30 天。
-- 最新部署：**2026-11-25 真实引擎版上线**，deployment `8ec9ca9e-69f2-45ac-9658-4676724a00ce`，4 个文件上传（jobcard/config.local.js、jobcard/index.html、jobcard/js/config.js、jobcard/js/firebase-engine.js），finalize 200，有效期续到 **2026-12-25T10:41:57Z**。线上现跑真实 Firebase AI Logic（固定 debug token），不再是 mock。
+- 最新部署：**2026-11-25 显示问题修复版上线**，deployment `77952901-37e3-4590-ae2e-a5a053f05b51`，3 个文件上传（jobcard/index.html、jobcard/js/ai.js、jobcard/js/app.js），finalize 200，有效期续到 **2026-12-25T13:26:51Z**。修复：页脚改为按模式动态文案（真实模式不再显示模拟说明）；`deviceStatus()` 竞态修复，路由面板在真实模式下显示真实引擎设备状态。线上仍跑真实 Firebase AI Logic（固定 debug token），不再是 mock。
 
 ## 部署方式
 
