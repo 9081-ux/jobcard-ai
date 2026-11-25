@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="JobCard AI — Offline-first AI field notes for home-service pros. On-device job processing with Gemini Nano, cloud weekly rollups with Firebase AI Logic.">
+  <title>JobCard AI — Offline-first AI field notes</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Firebase JS SDK v12.5.0 (pinned) via CDN ES modules. Bare specifiers
+       'firebase/app', 'firebase/ai', 'firebase/app-check' are used by
+       js/firebase-engine.js dynamic imports; the import map resolves them.
+       Verified 2026-11-25: all three URLs return 200 and the ai/app-check
+       builds import firebase-app.js by absolute URL. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js",
+      "firebase/ai": "https://www.gstatic.com/firebasejs/12.5.0/firebase-ai.js",
+      "firebase/app-check": "https://www.gstatic.com/firebasejs/12.5.0/firebase-app-check.js"
+    }
+  }
+  </script>
+  <!-- Firebase config lives in the untracked config.local.js (see js/config.js). -->
+  <script src="config.local.js" defer onerror="void 0"></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">▦</span>
+        <div>
+          <strong>JobCard AI</strong>
+          <span class="brand-sub">Offline-first AI field notes</span>
+        </div>
+      </div>
+      <div class="topbar-status">
+        <span id="engine-mode-pill" class="pill pill-mock">MOCK ENGINE · SIMULATED AI</span>
+        <span id="net-pill" class="pill pill-online">ONLINE</span>
+        <label class="toggle-wrap" title="Simulate losing signal — instant tasks keep working on-device">
+          <input type="checkbox" id="toggle-offline">
+          <span class="toggle-label">Simulate offline</span>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Main views">
+    <button class="nav-tab active" data-view="jobs">Job cards</button>
+    <button class="nav-tab" data-view="new">New job</button>
+    <button class="nav-tab" data-view="digest">Weekly digest</button>
+    <button class="nav-tab" data-view="routing">Hybrid routing</button>
+  </nav>
+
+  <main class="container">
+    <!-- ============ JOBS ============ -->
+    <section class="view active" id="view-jobs">
+      <div class="view-head">
+        <h2>Job cards</h2>
+        <p class="muted">Every saved job, with its AI result. Jobs are stored on this device only — no account, no upload.</p>
+      </div>
+      <div class="jobs-layout">
+        <div id="job-list" class="job-list" aria-label="Saved jobs"></div>
+        <div id="job-detail" class="job-detail" aria-label="Job detail"></div>
+      </div>
+    </section>
+
+    <!-- ============ NEW JOB ============ -->
+    <section class="view" id="view-new">
+      <div class="view-head">
+        <h2>New job</h2>
+        <p class="muted">Write rough notes the way you talk on site. The AI turns them into a summary, parts list, invoice and a message for the customer — on-device first, so it works in a basement with no signal.</p>
+      </div>
+      <div class="new-layout">
+        <form id="job-form" class="card form-card">
+          <label>Customer name
+            <input id="f-customer" type="text" placeholder="e.g. Maria Lopez" autocomplete="off">
+          </label>
+          <label>Address
+            <input id="f-address" type="text" placeholder="e.g. 4821 Maple Ridge Dr, Austin, TX" autocomplete="off">
+          </label>
+          <label>Trade
+            <select id="f-trade">
+              <option>HVAC</option>
+              <option>Plumbing</option>
+              <option>Electrical</option>
+              <option>Cleaning</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>Field notes
+            <textarea id="f-text" rows="9" placeholder="Replaced the clogged air filter. Installed a new capacitor $68.50, labor $120. Customer wants a quote for a humidifier next week…"></textarea>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="f-sample"> This is a sample / demo job
+          </label>
+          <button class="btn btn-primary btn-block" id="btn-process-new" type="submit">Process with AI</button>
+          <p class="fineprint">Invoice lines only use amounts you write in the notes. Nothing is invented.</p>
+        </form>
+        <div>
+          <div class="card">
+            <h3>Try it in one tap</h3>
+            <p class="muted">Three sample jobs, labeled SAMPLE. No typing needed.</p>
+            <div id="sample-buttons" class="sample-buttons"></div>
+          </div>
+          <div id="new-job-result" class="card result-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WEEKLY DIGEST ============ -->
+    <section class="view" id="view-digest">
+      <div class="view-head">
+        <h2>Weekly digest</h2>
+        <p class="muted">The cloud rollup: totals, most-used parts, open follow-ups and a customer report draft — across every job you saved. Cloud-only by design: one job is a field note, a week of jobs is a pattern.</p>
+      </div>
+      <div class="card">
+        <button class="btn btn-primary" id="btn-generate-digest">Generate weekly digest</button>
+        <span class="muted small">Runs ONLY_IN_CLOUD. If the offline simulation is on, it will honestly refuse.</span>
+      </div>
+      <div id="digest-output" class="card digest-output"></div>
+    </section>
+
+    <!-- ============ ROUTING ============ -->
+    <section class="view" id="view-routing">
+      <div class="view-head">
+        <h2>Hybrid routing</h2>
+        <p class="muted">Why two engines? The basement has no signal — and that is exactly when the technician needs AI most. Instant work runs on-device; the week-wide rollup runs in the cloud. Every call below shows its real engine and measured time.</p>
+      </div>
+      <div class="routing-layout">
+        <div class="card" id="device-status-card">
+          <h3>Device &amp; network status</h3>
+          <div id="device-status"><p class="muted">Checking…</p></div>
+          <label class="check-row">
+            <input type="checkbox" id="toggle-nano-off"> Simulate Gemini Nano unavailable <span class="muted small">(instant tasks fall back to the cloud)</span>
+          </label>
+        </div>
+        <div class="card">
+          <h3>Which engine runs what</h3>
+          <div id="engine-table"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>AI call log — this session</h3>
+        <div id="call-log"></div>
+      </div>
+      <div class="card">
+        <h3>How the routing works</h3>
+        <ul class="explain">
+          <li><strong>Instant job processing — PREFER_ON_DEVICE.</strong> If Gemini Nano is on the device, the notes are processed there. If Nano is missing, the same call falls back to the cloud. If you are offline (real or simulated), it stays on-device — that is the whole point.</li>
+          <li><strong>Weekly digest — ONLY_IN_CLOUD.</strong> A rollup needs the whole week at once; it runs in the cloud and honestly refuses when offline instead of faking it.</li>
+          <li><strong>Every result is labeled.</strong> ON-DEVICE, CLOUD, or CLOUD · FALLBACK, with the measured milliseconds — never a hardcoded number.</li>
+          <li><strong>Money is never invented.</strong> Invoice totals add up only the amounts written in the notes; the cloud model never gets to invent a price.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>JobCard AI — built for #BuildHybridAI 2026 (Firebase AI Logic). Runs on the local mock engine until a Firebase project config is added; see <code>SWAP-TO-REAL.md</code>. Sample jobs are labeled SAMPLE. No data leaves this device in mock mode.</p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

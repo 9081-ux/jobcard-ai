@@ -1,0 +1,14 @@
+# JobCard AI — never commit secrets.
+# Firebase web config, App Check debug tokens, service account keys, .env
+# files and any private key material are banned from this repo by policy
+# (competition rules §5 + project RULES.md §10).
+config.local.js
+.env
+.env.*
+*.key
+*.pem
+service-account*.json
+firebase-debug.log
+node_modules/
+node_modules
+.DS_Store
