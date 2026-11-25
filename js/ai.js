@@ -63,6 +63,12 @@ export class HybridAI {
    * the result honestly; the mock never pretends a real model ran.
    */
   async deviceStatus(routingState) {
+    // Ensure the config is loaded before branching: this method can run
+    // (routing panel first render at init) before any engine call has set
+    // this.config, which used to fall through to the mock branch even in
+    // firebase mode. getConfig() is synchronous and reads the already-loaded
+    // window.JOBCARD_CONFIG, so this is safe to call here.
+    if (!this.config) this.config = getConfig();
     if (this.engineKind === 'firebase') {
       const engine = await this.getEngine();
       return engine.deviceStatus(routingState);

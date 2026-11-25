@@ -325,7 +325,21 @@ async function generateDigest() {
 
 // ---- routing view ----
 async function renderRoutingPanel() {
-  const status = await ai.deviceStatus(routing);
+  let status;
+  try {
+    status = await ai.deviceStatus(routing);
+  } catch (err) {
+    // Display-layer guard: in firebase mode deviceStatus() initializes the
+    // engine, whose SDK loads from a CDN. If that load fails in this browser
+    // the panel must still render something honest instead of going blank.
+    // (Engine behavior is unchanged — this only affects the panel copy.)
+    status = {
+      label: 'Firebase AI Logic connected — device status could not be probed in this browser',
+      detail: `The on-device model check did not complete here (${esc(err?.message || err)}). Instant tasks still run through Firebase AI Logic with cloud fallback; the weekly digest runs ONLY_IN_CLOUD.`,
+      availability: 'unknown',
+      simulated: false,
+    };
+  }
   const statusEl = document.getElementById('device-status');
   if (statusEl) {
     statusEl.innerHTML = `
@@ -365,6 +379,14 @@ function renderHeaderState() {
   if (modeEl) {
     modeEl.textContent = getConfig().mode === 'firebase' ? 'LIVE · FIREBASE AI LOGIC' : 'MOCK ENGINE · SIMULATED AI';
     modeEl.className = `pill ${getConfig().mode === 'firebase' ? 'pill-live' : 'pill-mock'}`;
+  }
+  const footerEl = document.getElementById('footer-note');
+  if (footerEl) {
+    // The footer used to be static mock-mode copy, which contradicted the
+    // LIVE pill once the real engine was deployed. Set it from the mode.
+    footerEl.innerHTML = getConfig().mode === 'firebase'
+      ? 'JobCard AI — built for #BuildHybridAI 2026 (Firebase AI Logic). Running live on real Firebase AI Logic — Gemini Nano on-device with cloud fallback. Sample jobs are labeled SAMPLE.'
+      : 'JobCard AI — built for #BuildHybridAI 2026 (Firebase AI Logic). Runs on the local mock engine until a Firebase project config is added; see <code>SWAP-TO-REAL.md</code>. Sample jobs are labeled SAMPLE. No data leaves this device in mock mode.';
   }
   const netEl = document.getElementById('net-pill');
   if (netEl) {
